@@ -117,7 +117,7 @@ class CrashpadClient {
                     const std::vector<std::string>& arguments,
                     bool restartable,
                     bool asynchronous_start);
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_LINUX)
   //! \brief The same function as above one but with one additional argument
   //!     (attachments)
   //!
@@ -134,7 +134,7 @@ class CrashpadClient {
                     const std::vector<base::FilePath>& attachments,
                     bool restartable,
                     bool asynchronous_start);
-#endif // OS_WIN
+#endif // OS_WIN || OS_LINUX
 
 #if defined(OS_ANDROID) || defined(OS_LINUX) || DOXYGEN
   //! \brief Retrieve the socket and process ID for the handler.
