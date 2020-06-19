@@ -66,23 +66,6 @@ CrashReportExceptionHandler::CrashReportExceptionHandler(
     const std::vector<base::FilePath>* attachments,
     bool write_minidump_to_database,
     bool write_minidump_to_log,
-    const UserStreamDataSources* user_stream_data_sources) {
-  CrashReportExceptionHandler(database,
-                              upload_thread,
-                              process_annotations,
-                              /*attachments=*/{},
-                              write_minidump_to_database,
-                              write_minidump_to_log,
-                              user_stream_data_sources);
-}
-
-CrashReportExceptionHandler::CrashReportExceptionHandler(
-    CrashReportDatabase* database,
-    CrashReportUploadThread* upload_thread,
-    const std::map<std::string, std::string>* process_annotations,
-    const std::vector<base::FilePath>* attachments,
-    bool write_minidump_to_database,
-    bool write_minidump_to_log,
     const UserStreamDataSources* user_stream_data_sources)
     : database_(database),
       upload_thread_(upload_thread),

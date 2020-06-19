@@ -108,9 +108,6 @@ void Usage(const base::FilePath& me) {
 #if defined(OS_MACOSX)
 "      --handshake-fd=FD       establish communication with the client over FD\n"
 #endif  // OS_MACOSX
-#if defined(OS_WIN) || defined(OS_LINUX)
-"      --attachment=FILE_PATH  attach specified files to the crash report\n"
-#endif  // OS_WIN || OS_LINUX
 #if defined(OS_WIN)
 "      --initial-client-data=HANDLE_request_crash_dump,\n"
 "                            HANDLE_request_non_crash_dump,\n"
@@ -532,9 +529,6 @@ int HandlerMain(int argc,
 #if defined(OS_MACOSX)
     kOptionHandshakeFD,
 #endif  // OS_MACOSX
-#if defined(OS_WIN) || defined(OS_LINUX)
-    kOptionAttachment,
-#endif // OS_WIN || OS_LINUX
 #if defined(OS_WIN)
     kOptionInitialClientData,
 #endif  // OS_WIN
@@ -590,9 +584,6 @@ int HandlerMain(int argc,
 #if defined(OS_MACOSX)
     {"handshake-fd", required_argument, nullptr, kOptionHandshakeFD},
 #endif  // OS_MACOSX
-#if defined(OS_WIN) || defined(OS_LINUX)
-    {"attachment", required_argument, nullptr, kOptionAttachment},
-#endif // OS_WIN || OS_LINUX
 #if defined(OS_WIN)
     {"initial-client-data",
      required_argument,
@@ -725,13 +716,6 @@ int HandlerMain(int argc,
         break;
       }
 #endif  // OS_MACOSX
-#if defined(OS_WIN) || defined(OS_LINUX)
-      case kOptionAttachment: {
-        options.attachments.push_back(base::FilePath(
-            ToolSupport::CommandLineArgumentToFilePathStringType(optarg)));
-        break;
-      }
-#endif  // OS_WIN || OS_LINUX
 #if defined(OS_WIN)
       case kOptionInitialClientData: {
         if (!options.initial_client_data.InitializeFromString(optarg)) {

@@ -650,9 +650,6 @@ class CrashReportDatabaseWin : public CrashReportDatabase {
   // Build a filepath for the directory for the report to hold attachments.
   base::FilePath AttachmentsPath(const UUID& uuid);
 
-  // Build a filepath for the directory for the report to hold attachments.
-  base::FilePath AttachmentsPath(const UUID& uuid);
-
  private:
   // CrashReportDatabase:
   OperationStatus RecordUploadAttempt(UploadReport* report,
@@ -1048,12 +1045,12 @@ int CrashReportDatabaseWin::CleanDatabase(time_t lockfile_ttl) {
   while ((result = reader.NextFile(&filename)) ==
          DirectoryReader::Result::kSuccess) {
     timespec filetime;
+    const base::FilePath report_path(dir_path.Append(filename));
     if (!FileModificationTime(report_path, &filetime) ||
         filetime.tv_sec > now - lockfile_ttl) {
       continue;
     }
 
-    const base::FilePath report_path(dir_path.Append(filename));
     const ReportDisk* report_disk;
     UUID uuid = UUIDFromReportPath(report_path);
     OperationStatus os = metadata->FindSingleReport(uuid, &report_disk);

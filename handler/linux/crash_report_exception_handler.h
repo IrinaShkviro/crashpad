@@ -72,19 +72,6 @@ class CrashReportExceptionHandler : public ExceptionHandlerServer::Delegate {
       bool write_minidump_to_log,
       const UserStreamDataSources* user_stream_data_sources);
 
-  //! \brief The same as above but with one additional argument (attachments).
-  //!
-  //! \param[in] attachments A vector of file paths to attach to the crash
-  //!     report on the server.
-  CrashReportExceptionHandler(
-      CrashReportDatabase* database,
-      CrashReportUploadThread* upload_thread,
-      const std::map<std::string, std::string>* process_annotations,
-      const std::vector<base::FilePath>* attachments,
-      bool write_minidump_to_database,
-      bool write_minidump_to_log,
-      const UserStreamDataSources* user_stream_data_sources);
-
   ~CrashReportExceptionHandler() override;
 
   // ExceptionHandlerServer::Delegate:

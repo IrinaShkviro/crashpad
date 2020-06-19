@@ -120,7 +120,6 @@ class CrashpadClient {
                     bool restartable,
                     bool asynchronous_start,
                     const std::vector<base::FilePath>& attachments = {});
->>>>>>> add_attachments_win_and_linux
 
 #if defined(OS_ANDROID) || defined(OS_LINUX) || DOXYGEN
   //! \brief Retrieve the socket and process ID for the handler.
