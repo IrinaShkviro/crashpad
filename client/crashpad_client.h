@@ -107,20 +107,6 @@ class CrashpadClient {
   //!     a background thread. Optionally, WaitForHandlerStart() can be used at
   //!     a suitable time to retreive the result of background startup. This
   //!     option is only used on Windows.
-  //!
-  //! \return `true` on success, `false` on failure with a message logged.
-  bool StartHandler(const base::FilePath& handler,
-                    const base::FilePath& database,
-                    const base::FilePath& metrics_dir,
-                    const std::string& url,
-                    const std::map<std::string, std::string>& annotations,
-                    const std::vector<std::string>& arguments,
-                    bool restartable,
-                    bool asynchronous_start);
-#if defined(OS_WIN) || defined(OS_LINUX)
-  //! \brief The same function as above one but with one additional argument
-  //!     (attachments)
-  //!
   //! \param[in] attachments Vector that stores file paths that should be
   //!     uploaded on the crash server with the report.
   //!
@@ -131,10 +117,9 @@ class CrashpadClient {
                     const std::string& url,
                     const std::map<std::string, std::string>& annotations,
                     const std::vector<std::string>& arguments,
-                    const std::vector<base::FilePath>& attachments,
                     bool restartable,
-                    bool asynchronous_start);
-#endif // OS_WIN || OS_LINUX
+                    bool asynchronous_start,
+                    const std::vector<base::FilePath>& attachments = {});
 
 #if defined(OS_ANDROID) || defined(OS_LINUX) || DOXYGEN
   //! \brief Retrieve the socket and process ID for the handler.

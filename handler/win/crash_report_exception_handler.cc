@@ -24,6 +24,7 @@
 #include "minidump/minidump_file_writer.h"
 #include "minidump/minidump_user_extension_stream_data_source.h"
 #include "snapshot/win/process_snapshot_win.h"
+#include "util/file/file_helper.h"
 #include "util/file/file_writer.h"
 #include "util/misc/metrics.h"
 #include "util/win/registration_protocol_win.h"
@@ -31,18 +32,6 @@
 #include "util/win/termination_codes.h"
 
 namespace crashpad {
-
-CrashReportExceptionHandler::CrashReportExceptionHandler(
-    CrashReportDatabase* database,
-    CrashReportUploadThread* upload_thread,
-    const std::map<std::string, std::string>* process_annotations,
-    const UserStreamDataSources* user_stream_data_sources) {
-  CrashReportExceptionHandler(database,
-                              upload_thread,
-                              process_annotations,
-                              /*attachments=*/{},
-                              user_stream_data_sources);
-}
 
 CrashReportExceptionHandler::CrashReportExceptionHandler(
     CrashReportDatabase* database,
@@ -127,33 +116,19 @@ unsigned int CrashReportExceptionHandler::ExceptionHandlerServerException(
       return termination_code;
     }
 
-    char buf[4096];
-    for (auto attachment = attachments_->begin();
-         attachment != attachments_->end();
-         ++attachment) {
-      base::FilePath filename = attachment->BaseName();
-      FileWriter* file_writer =
-          new_report->AddAttachment(base::UTF16ToUTF8(filename.value()));
-
-      std::unique_ptr<FileReader> file_reader(std::make_unique<FileReader>());
-      if (!file_reader->Open(*attachment)) {
-        LOG(ERROR) << "attachment " << attachment->value().c_str()
+    for (const auto& attachment : (*attachments_)) {
+      FileReader file_reader;
+      if (!file_reader.Open(attachment)) {
+        LOG(ERROR) << "attachment " << attachment.value().c_str()
                    << " couldn't be opened, skipping";
         continue;
       }
 
-      FileOperationResult read_result;
-      do {
-        read_result = file_reader->Read(buf, sizeof(buf));
-        if (read_result < 0) {
-          break;
-        }
-        if (read_result > 0 && !file_writer->Write(buf, read_result)) {
-          break;
-        }
-      } while (read_result > 0);
+      base::FilePath filename = attachment.BaseName();
+      FileWriter* file_writer =
+          new_report->AddAttachment(base::UTF16ToUTF8(filename.value()));
 
-      file_reader->Close();
+      CopyFileContent(&file_reader, file_writer);
     }
 
     UUID uuid;
