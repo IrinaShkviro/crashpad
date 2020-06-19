@@ -53,6 +53,8 @@ class CrashReportExceptionHandler : public ExceptionHandlerServer::Delegate {
   //!     To interoperate with Breakpad servers, the recommended practice is to
   //!     specify values for the `"prod"` and `"ver"` keys as process
   //!     annotations.
+  //! \param[in] attachments A vector of file paths to attach to the crash
+  //!     report on the server.
   //! \param[in] write_minidump_to_database Whether the minidump shall be
   //!     written to database.
   //! \param[in] write_minidump_to_log Whether the minidump shall be written to
@@ -61,18 +63,6 @@ class CrashReportExceptionHandler : public ExceptionHandlerServer::Delegate {
   //!     crash reports. For each crash report that is written, the data sources
   //!     are called in turn. These data sources may contribute additional
   //!     minidump streams. `nullptr` if not required.
-  CrashReportExceptionHandler(
-      CrashReportDatabase* database,
-      CrashReportUploadThread* upload_thread,
-      const std::map<std::string, std::string>* process_annotations,
-      bool write_minidump_to_database,
-      bool write_minidump_to_log,
-      const UserStreamDataSources* user_stream_data_sources);
-
-  //! \brief The same as above but with one additional argument (attachments).
-  //!
-  //! \param[in] attachments A vector of file paths to attach to the crash
-  //!     report on the server.
   CrashReportExceptionHandler(
       CrashReportDatabase* database,
       CrashReportUploadThread* upload_thread,
