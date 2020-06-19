@@ -101,6 +101,9 @@ void Usage(const base::FilePath& me) {
 "Crashpad's exception handler server.\n"
 "\n"
 "      --annotation=KEY=VALUE  set a process annotation in each crash report\n"
+#if defined(OS_WIN) || defined(OS_LINUX)
+"      --attachment=FILE_PATH  attach specified files to the crash report\n"
+#endif  // OS_WIN || OS_LINUX
 "      --database=PATH         store the crash report database at PATH\n"
 #if defined(OS_MACOSX)
 "      --handshake-fd=FD       establish communication with the client over FD\n"
@@ -522,6 +525,9 @@ int HandlerMain(int argc,
     // Long options without short equivalents.
     kOptionLastChar = 255,
     kOptionAnnotation,
+#if defined(OS_WIN) || defined(OS_LINUX)
+    kOptionAttachment,
+#endif  // OS_WIN || OS_LINUX
     kOptionDatabase,
 #if defined(OS_MACOSX)
     kOptionHandshakeFD,
@@ -577,6 +583,9 @@ int HandlerMain(int argc,
 
   static constexpr option long_options[] = {
     {"annotation", required_argument, nullptr, kOptionAnnotation},
+#if defined(OS_WIN) || defined(OS_LINUX)
+    {"attachment", required_argument, nullptr, kOptionAttachment},
+#endif  // OS_WIN || OS_LINUX
     {"database", required_argument, nullptr, kOptionDatabase},
 #if defined(OS_MACOSX)
     {"handshake-fd", required_argument, nullptr, kOptionHandshakeFD},
@@ -689,6 +698,13 @@ int HandlerMain(int argc,
         }
         break;
       }
+#if defined(OS_WIN) || defined(OS_LINUX)
+      case kOptionAttachment: {
+        options.attachments.push_back(base::FilePath(
+            ToolSupport::CommandLineArgumentToFilePathStringType(optarg)));
+        break;
+      }
+#endif  // OS_WIN || OS_LINUX
       case kOptionDatabase: {
         options.database = base::FilePath(
             ToolSupport::CommandLineArgumentToFilePathStringType(optarg));

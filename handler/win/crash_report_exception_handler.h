@@ -60,6 +60,7 @@ class CrashReportExceptionHandler final
       CrashReportDatabase* database,
       CrashReportUploadThread* upload_thread,
       const std::map<std::string, std::string>* process_annotations,
+      const std::vector<base::FilePath>* attachments,
       const UserStreamDataSources* user_stream_data_sources);
 
   CrashReportExceptionHandler(

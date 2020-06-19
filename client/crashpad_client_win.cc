@@ -607,28 +607,8 @@ bool CrashpadClient::StartHandler(
     const std::map<std::string, std::string>& annotations,
     const std::vector<std::string>& arguments,
     bool restartable,
-    bool asynchronous_start) {
-  return StartHandler(handler,
-               database,
-               metrics_dir,
-               url,
-               annotations,
-               arguments,
-               /*attachments=*/{},
-               restartable,
-               asynchronous_start);
-}
-
-bool CrashpadClient::StartHandler(
-    const base::FilePath& handler,
-    const base::FilePath& database,
-    const base::FilePath& metrics_dir,
-    const std::string& url,
-    const std::map<std::string, std::string>& annotations,
-    const std::vector<std::string>& arguments,
-    const std::vector<base::FilePath>& attachments,
-    bool restartable,
-    bool asynchronous_start) {
+    bool asynchronous_start,
+    const std::vector<base::FilePath>& attachments) {
   DCHECK(ipc_pipe_.empty());
 
   // Both the pipe and the signalling events have to be created on the main

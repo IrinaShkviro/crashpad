@@ -67,6 +67,7 @@ class CrashReportExceptionHandler : public ExceptionHandlerServer::Delegate {
       CrashReportDatabase* database,
       CrashReportUploadThread* upload_thread,
       const std::map<std::string, std::string>* process_annotations,
+      const std::vector<base::FilePath>* attachments,
       bool write_minidump_to_database,
       bool write_minidump_to_log,
       const UserStreamDataSources* user_stream_data_sources);

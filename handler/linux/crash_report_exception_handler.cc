@@ -23,6 +23,7 @@
 #include "minidump/minidump_file_writer.h"
 #include "snapshot/linux/process_snapshot_linux.h"
 #include "snapshot/sanitized/process_snapshot_sanitized.h"
+#include "util/file/file_helper.h"
 #include "util/file/file_reader.h"
 #include "util/file/output_stream_file_writer.h"
 #include "util/linux/direct_ptrace_connection.h"
@@ -62,6 +63,7 @@ CrashReportExceptionHandler::CrashReportExceptionHandler(
     CrashReportDatabase* database,
     CrashReportUploadThread* upload_thread,
     const std::map<std::string, std::string>* process_annotations,
+    const std::vector<base::FilePath>* attachments,
     bool write_minidump_to_database,
     bool write_minidump_to_log,
     const UserStreamDataSources* user_stream_data_sources) {
@@ -218,33 +220,18 @@ bool CrashReportExceptionHandler::WriteMinidumpToDatabase(
     }
   }
 
-  char buf[4096];
-  for (auto attachment = attachments_->begin();
-       attachment != attachments_->end();
-       ++attachment) {
-    base::FilePath filename = attachment->BaseName();
-    FileWriter* file_writer =
-        new_report->AddAttachment(filename.value());
-
-    std::unique_ptr<FileReader> file_reader(std::make_unique<FileReader>());
-    if (!file_reader->Open(*attachment)) {
-      LOG(ERROR) << "attachment " << attachment->value().c_str()
+  for (const auto& attachment : (*attachments_)) {
+    FileReader file_reader;
+    if (!file_reader.Open(attachment)) {
+      LOG(ERROR) << "attachment " << attachment.value().c_str()
                  << " couldn't be opened, skipping";
       continue;
     }
 
-    FileOperationResult read_result;
-    do {
-      read_result = file_reader->Read(buf, sizeof(buf));
-      if (read_result < 0) {
-        break;
-      }
-      if (read_result > 0 && !file_writer->Write(buf, read_result)) {
-        break;
-      }
-    } while (read_result > 0);
+    base::FilePath filename = attachment.BaseName();
+    FileWriter* file_writer = new_report->AddAttachment(filename.value());
 
-    file_reader->Close();
+    CopyFileContent(&file_reader, file_writer);
   }
 
   UUID uuid;
