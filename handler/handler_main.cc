@@ -101,13 +101,13 @@ void Usage(const base::FilePath& me) {
 "Crashpad's exception handler server.\n"
 "\n"
 "      --annotation=KEY=VALUE  set a process annotation in each crash report\n"
+#if defined(OS_WIN) || defined(OS_LINUX)
+"      --attachment=FILE_PATH  attach specified files to the crash report\n"
+#endif  // OS_WIN || OS_LINUX
 "      --database=PATH         store the crash report database at PATH\n"
 #if defined(OS_MACOSX)
 "      --handshake-fd=FD       establish communication with the client over FD\n"
 #endif  // OS_MACOSX
-#if defined(OS_WIN) || defined(OS_LINUX)
-"      --attachment=FILE_PATH  attach specified files to the crash report\n"
-#endif  // OS_WIN || OS_LINUX
 #if defined(OS_WIN)
 "      --initial-client-data=HANDLE_request_crash_dump,\n"
 "                            HANDLE_request_non_crash_dump,\n"
@@ -522,13 +522,13 @@ int HandlerMain(int argc,
     // Long options without short equivalents.
     kOptionLastChar = 255,
     kOptionAnnotation,
+#if defined(OS_WIN) || defined(OS_LINUX)
+    kOptionAttachment,
+#endif  // OS_WIN || OS_LINUX
     kOptionDatabase,
 #if defined(OS_MACOSX)
     kOptionHandshakeFD,
 #endif  // OS_MACOSX
-#if defined(OS_WIN) || defined(OS_LINUX)
-    kOptionAttachment,
-#endif // OS_WIN || OS_LINUX
 #if defined(OS_WIN)
     kOptionInitialClientData,
 #endif  // OS_WIN
@@ -577,13 +577,13 @@ int HandlerMain(int argc,
 
   static constexpr option long_options[] = {
     {"annotation", required_argument, nullptr, kOptionAnnotation},
+#if defined(OS_WIN) || defined(OS_LINUX)
+    {"attachment", required_argument, nullptr, kOptionAttachment},
+#endif  // OS_WIN || OS_LINUX
     {"database", required_argument, nullptr, kOptionDatabase},
 #if defined(OS_MACOSX)
     {"handshake-fd", required_argument, nullptr, kOptionHandshakeFD},
 #endif  // OS_MACOSX
-#if defined(OS_WIN) || defined(OS_LINUX)
-    {"attachment", required_argument, nullptr, kOptionAttachment},
-#endif // OS_WIN || OS_LINUX
 #if defined(OS_WIN)
     {"initial-client-data",
      required_argument,
@@ -689,6 +689,13 @@ int HandlerMain(int argc,
         }
         break;
       }
+#if defined(OS_WIN) || defined(OS_LINUX)
+      case kOptionAttachment: {
+        options.attachments.push_back(base::FilePath(
+            ToolSupport::CommandLineArgumentToFilePathStringType(optarg)));
+        break;
+      }
+#endif  // OS_WIN || OS_LINUX
       case kOptionDatabase: {
         options.database = base::FilePath(
             ToolSupport::CommandLineArgumentToFilePathStringType(optarg));
@@ -709,13 +716,6 @@ int HandlerMain(int argc,
         break;
       }
 #endif  // OS_MACOSX
-#if defined(OS_WIN) || defined(OS_LINUX)
-      case kOptionAttachment: {
-        options.attachments.push_back(base::FilePath(
-            ToolSupport::CommandLineArgumentToFilePathStringType(optarg)));
-        break;
-      }
-#endif  // OS_WIN || OS_LINUX
 #if defined(OS_WIN)
       case kOptionInitialClientData: {
         if (!options.initial_client_data.InitializeFromString(optarg)) {
