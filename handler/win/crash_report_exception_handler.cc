@@ -127,6 +127,11 @@ unsigned int CrashReportExceptionHandler::ExceptionHandlerServerException(
       base::FilePath filename = attachment.BaseName();
       FileWriter* file_writer =
           new_report->AddAttachment(base::UTF16ToUTF8(filename.value()));
+      if (file_writer == nullptr) {
+        LOG(ERROR) << "attachment " << filename.value().c_str()
+                   << " couldn't be created, skipping";
+        continue;
+      }
 
       CopyFileContent(&file_reader, file_writer);
     }

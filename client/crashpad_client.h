@@ -343,7 +343,8 @@ class CrashpadClient {
       const base::FilePath& metrics_dir,
       const std::string& url,
       const std::map<std::string, std::string>& annotations,
-      const std::vector<std::string>& arguments);
+      const std::vector<std::string>& arguments,
+      const std::vector<base::FilePath>& attachments = {});
 
   //! \brief Starts a handler process with an initial client.
   //!
