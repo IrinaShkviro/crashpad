@@ -108,7 +108,7 @@ class CrashpadClient {
   //!     a suitable time to retreive the result of background startup. This
   //!     option is only used on Windows.
   //! \param[in] attachments Vector that stores file paths that should be
-  //!     uploaded on the crash server with the report.
+  //!     captured with each report at the time of the crash.
   //!
   //! \return `true` on success, `false` on failure with a message logged.
   bool StartHandler(const base::FilePath& handler,

@@ -53,8 +53,8 @@ class CrashReportExceptionHandler : public ExceptionHandlerServer::Delegate {
   //!     To interoperate with Breakpad servers, the recommended practice is to
   //!     specify values for the `"prod"` and `"ver"` keys as process
   //!     annotations.
-  //! \param[in] attachments A vector of file paths to attach to the crash
-  //!     report on the server.
+  //! \param[in] attachments A vector of file paths that should be captured with
+  //!     each report at the time of the crash.
   //! \param[in] write_minidump_to_database Whether the minidump shall be
   //!     written to database.
   //! \param[in] write_minidump_to_log Whether the minidump shall be written to

@@ -86,10 +86,9 @@ std::string ReadRestOfFileAsString(FileHandle file) {
                                                                : std::string();
 }
 
-UUID UUIDFromReportPath(const base::FilePath& path) {
-  UUID uuid;
-  uuid.InitializeFromString(path.RemoveFinalExtension().BaseName().value());
-  return uuid;
+bool UUIDFromReportPath(const base::FilePath& path, UUID* uuid) {
+  return uuid->InitializeFromString(
+      path.RemoveFinalExtension().BaseName().value());
 }
 
 // Helper structures, and conversions ------------------------------------------
@@ -417,7 +416,6 @@ OperationStatus Metadata::DeleteReport(const UUID& uuid,
 
 int Metadata::CleanDatabase() {
   int removed = 0;
-  std::vector<ReportDisk>::iterator iter;
   for (auto report_iter = reports_.begin(); report_iter != reports_.end();) {
     if (!IsRegularFile(report_iter->file_path)) {
       report_iter = reports_.erase(report_iter);
@@ -683,8 +681,7 @@ base::FilePath CrashReportDatabaseWin::AttachmentsPath(const UUID& uuid) {
 
 FileWriter* CrashReportDatabase::NewReport::AddAttachment(
     const std::string& name) {
-  crashpad::CrashReportDatabaseWin* database_win =
-      static_cast<CrashReportDatabaseWin*>(database_);
+  auto database_win = static_cast<CrashReportDatabaseWin*>(database_);
   base::FilePath attachments_root_dir = database_win->AttachmentsRootPath();
   base::FilePath attachments_dir = database_win->AttachmentsPath(uuid_);
   if (!LoggingCreateDirectory(
@@ -1052,13 +1049,18 @@ int CrashReportDatabaseWin::CleanDatabase(time_t lockfile_ttl) {
     }
 
     const ReportDisk* report_disk;
-    UUID uuid = UUIDFromReportPath(report_path);
+    UUID uuid;
+    bool is_uuid = UUIDFromReportPath(report_path, &uuid);
+    // ignore files whose base name is not uuid
+    if (!is_uuid) {
+      continue;
+    }
     OperationStatus os = metadata->FindSingleReport(uuid, &report_disk);
 
     if (os == OperationStatus::kReportNotFound) {
       if (LoggingRemoveFile(report_path)) {
         ++removed;
-        RemoveAttachmentsByUUID(UUIDFromReportPath(report_path));
+        RemoveAttachmentsByUUID(uuid);
       }
       continue;
     }
@@ -1087,7 +1089,8 @@ void CrashReportDatabaseWin::CleanOrphanedAttachments() {
     if (IsDirectory(path, false)) {
       UUID uuid;
       if (!uuid.InitializeFromString(filename.value())) {
-        LOG(ERROR) << "unexpected attachment dir name " << filename.value().c_str();
+        LOG(ERROR) << "unexpected attachment dir name "
+                   << filename.value().c_str();
         continue;
       }
 
