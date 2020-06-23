@@ -97,7 +97,8 @@ bool InstallHandler(CrashpadClient* client,
                                            base::FilePath(),
                                            "",
                                            std::map<std::string, std::string>(),
-                                           std::vector<std::string>())
+                                           std::vector<std::string>(),
+                                           attachments)
              : client->StartHandler(handler_path,
                                     database_path,
                                     base::FilePath(),
@@ -143,11 +144,9 @@ void ValidateDump(const CrashReportDatabase::UploadReport* report,
     EXPECT_EQ(kTestAbortMessage, abort_message->second);
   }
 #endif
-#if defined(OS_LINUX)
   if (!start_at_crash) {
     ValidateAttachment(report);
   }
-#endif  // OS_LINUX
 
   for (const ModuleSnapshot* module : minidump_snapshot.Modules()) {
     for (const AnnotationSnapshot& annotation : module->AnnotationObjects()) {
@@ -188,20 +187,8 @@ CRASHPAD_CHILD_TEST_MAIN(StartHandlerForSelfTestChild) {
   static StringAnnotation<32> test_annotation(kTestAnnotationName);
   test_annotation.Set(kTestAnnotationValue);
 
-#if defined(OS_LINUX)
-  FileWriter writer;
-  base::FilePath test_attachment_path = base::FilePath(kTestAttachmentName);
-  if (!writer.Open(test_attachment_path,
-                   FileWriteMode::kTruncateOrCreate,
-                   FilePermissions::kOwnerOnly)) {
-    return EXIT_FAILURE;
-  }
-  writer.Write(kTestAttachmentContent, sizeof(kTestAttachmentContent));
-  writer.Close();
-  const std::vector<base::FilePath> attachments = {test_attachment_path};
-#else
-  const std::vector<base::FilePath> attachments = {};
-#endif  // OS_LINUX
+  const std::vector<base::FilePath> attachments = {
+      base::FilePath(kTestAttachmentName)};
 
   crashpad::CrashpadClient client;
   if (!InstallHandler(&client,
@@ -255,6 +242,16 @@ class StartHandlerForSelfInChildTest : public MultiprocessExec {
 
     // Wait for child to finish.
     CheckedReadFileAtEOF(ReadPipeHandle());
+
+    FileWriter writer;
+    base::FilePath test_attachment_path = base::FilePath(kTestAttachmentName);
+    if (!writer.Open(test_attachment_path,
+                     FileWriteMode::kCreateOrFail,
+                     FilePermissions::kOwnerOnly)) {
+      return EXIT_FAILURE;
+    }
+    writer.Write(kTestAttachmentContent, sizeof(kTestAttachmentContent));
+    writer.Close();
 
     auto database = CrashReportDatabase::Initialize(temp_dir.path());
     ASSERT_TRUE(database);

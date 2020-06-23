@@ -213,6 +213,11 @@ bool CrashReportExceptionHandler::WriteMinidumpToDatabase(
 
     base::FilePath filename = attachment.BaseName();
     FileWriter* file_writer = new_report->AddAttachment(filename.value());
+    if (file_writer == nullptr) {
+      LOG(ERROR) << "attachment " << filename.value().c_str()
+                 << " couldn't be created, skipping";
+      continue;
+    }
 
     CopyFileContent(&file_reader, file_writer);
   }

@@ -275,7 +275,7 @@ class Metadata {
   //! \brief Removes reports from the metadata database, that don't have
   //!     corresponding report files.
   //!
-  //! \return amount of removed from the metadata database reports.
+  //! \return number of metadata entries removed
   int CleanDatabase();
 
  private:
