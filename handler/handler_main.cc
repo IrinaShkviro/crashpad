@@ -102,7 +102,8 @@ void Usage(const base::FilePath& me) {
 "\n"
 "      --annotation=KEY=VALUE  set a process annotation in each crash report\n"
 #if defined(OS_WIN) || defined(OS_LINUX)
-"      --attachment=FILE_PATH  attach specified files to the crash report\n"
+"      --attachment=FILE_PATH  attach specified file to each crash report\n"
+"                              at the time of the crash\n"
 #endif  // OS_WIN || OS_LINUX
 "      --database=PATH         store the crash report database at PATH\n"
 #if defined(OS_MACOSX)
