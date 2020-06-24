@@ -128,8 +128,7 @@ void ValidateAttachment(const CrashReportDatabase::UploadReport* report) {
             0);
 }
 
-void ValidateDump(const CrashReportDatabase::UploadReport* report,
-                  bool start_at_crash) {
+void ValidateDump(const CrashReportDatabase::UploadReport* report) {
   ProcessSnapshotMinidump minidump_snapshot;
   ASSERT_TRUE(minidump_snapshot.Initialize(report->Reader()));
 
@@ -144,9 +143,7 @@ void ValidateDump(const CrashReportDatabase::UploadReport* report,
     EXPECT_EQ(kTestAbortMessage, abort_message->second);
   }
 #endif
-  if (!start_at_crash) {
-    ValidateAttachment(report);
-  }
+  ValidateAttachment(report);
 
   for (const ModuleSnapshot* module : minidump_snapshot.Modules()) {
     for (const AnnotationSnapshot& annotation : module->AnnotationObjects()) {
@@ -231,6 +228,15 @@ class StartHandlerForSelfInChildTest : public MultiprocessExec {
 
  private:
   void MultiprocessParent() override {
+    FileWriter writer;
+    base::FilePath test_attachment_path = base::FilePath(kTestAttachmentName);
+    bool is_created = writer.Open(test_attachment_path,
+                                  FileWriteMode::kCreateOrFail,
+                                  FilePermissions::kOwnerOnly);
+    ASSERT_TRUE(is_created);
+    writer.Write(kTestAttachmentContent, sizeof(kTestAttachmentContent));
+    writer.Close();
+
     ScopedTempDir temp_dir;
     VMSize temp_dir_length = temp_dir.path().value().size();
     ASSERT_TRUE(LoggingWriteFile(
@@ -242,16 +248,6 @@ class StartHandlerForSelfInChildTest : public MultiprocessExec {
 
     // Wait for child to finish.
     CheckedReadFileAtEOF(ReadPipeHandle());
-
-    FileWriter writer;
-    base::FilePath test_attachment_path = base::FilePath(kTestAttachmentName);
-    if (!writer.Open(test_attachment_path,
-                     FileWriteMode::kCreateOrFail,
-                     FilePermissions::kOwnerOnly)) {
-      return EXIT_FAILURE;
-    }
-    writer.Write(kTestAttachmentContent, sizeof(kTestAttachmentContent));
-    writer.Close();
 
     auto database = CrashReportDatabase::Initialize(temp_dir.path());
     ASSERT_TRUE(database);
@@ -267,13 +263,15 @@ class StartHandlerForSelfInChildTest : public MultiprocessExec {
     ASSERT_EQ(reports.size(), options_.set_first_chance_handler ? 0u : 1u);
 
     if (options_.set_first_chance_handler) {
+      ASSERT_TRUE(LoggingRemoveFile(test_attachment_path));
       return;
     }
 
     std::unique_ptr<const CrashReportDatabase::UploadReport> report;
     ASSERT_EQ(database->GetReportForUploading(reports[0].uuid, &report),
               CrashReportDatabase::kNoError);
-    ValidateDump(report.get(), options_.start_handler_at_crash);
+    ValidateDump(report.get());
+    ASSERT_TRUE(LoggingRemoveFile(test_attachment_path));
   }
 
   StartHandlerForSelfTestOptions options_;
